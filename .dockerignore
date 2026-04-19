@@ -1,0 +1,10 @@
+.git
+.github
+.gitignore
+.dockerignore
+.env
+data
+home
+config/ServerDescription.json
+README.md
+*.md

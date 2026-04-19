@@ -1,0 +1,7 @@
+.env
+data/
+home/
+config/ServerDescription.json
+*.log
+.DS_Store
+.claude/settings.local.json

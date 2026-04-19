@@ -1,0 +1,24 @@
+services:
+  windrose:
+    build: .
+    image: windrose-dedicated-server:local
+    container_name: windrose
+    restart: unless-stopped
+    network_mode: host
+    stop_grace_period: 120s
+    environment:
+      PUID: ${PUID:-1000}
+      PGID: ${PGID:-1000}
+      UPDATE_ON_START: ${UPDATE_ON_START:-true}
+      WINDROSE_APP_ID: ${WINDROSE_APP_ID:-4129620}
+      WINEDEBUG: ${WINEDEBUG:--all}
+    volumes:
+      - ./data:/data/server
+      - ./home:/home/steam
+      - ./config:/config:ro
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/healthcheck.sh"]
+      interval: 30s
+      timeout: 10s
+      start_period: 600s
+      retries: 3
