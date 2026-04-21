@@ -42,10 +42,15 @@ fi
 
 if [[ "$UPDATE_ON_START" == "true" ]] || [[ ! -x "$SERVER_DIR/$SERVER_EXE_REL" ]]; then
     log "running SteamCMD: app $WINDROSE_APP_ID -> $SERVER_DIR"
+    # app_license_request blocks until Steam grants the anonymous license for
+    # the app. Without it, app_update races the asynchronous PICS license sync
+    # and fails with "Missing configuration" when it loses — most reliably
+    # after wineboot, which shifts the timing.
     gosu steam steamcmd \
         +@sSteamCmdForcePlatformType windows \
         +force_install_dir "$SERVER_DIR" \
         +login anonymous \
+        +app_license_request "$WINDROSE_APP_ID" \
         +app_update "$WINDROSE_APP_ID" validate \
         +quit
 else
@@ -57,11 +62,11 @@ if [[ ! -x "$SERVER_DIR/$SERVER_EXE_REL" ]]; then
     exit 1
 fi
 
-if [[ -f /config/ServerDescription.json ]] && [[ ! -f "$SERVER_DIR/ServerDescription.json" ]]; then
+if [[ -f /config/ServerDescription.json ]] && [[ ! -f "$SERVER_DIR/R5/ServerDescription.json" ]]; then
     log "seeding ServerDescription.json from /config (first run only)"
     install -o steam -g steam -m 0644 \
         /config/ServerDescription.json \
-        "$SERVER_DIR/ServerDescription.json"
+        "$SERVER_DIR/R5/ServerDescription.json"
 fi
 
 cd "$SERVER_DIR"
@@ -74,4 +79,4 @@ exec gosu steam env \
     WINEDEBUG="${WINEDEBUG:--all}" \
     WINEDLLOVERRIDES="${WINEDLLOVERRIDES:-mscoree=;mshtml=}" \
     xvfb-run -a --server-args="-screen 0 1024x768x24" -- \
-    wine64 "$SERVER_DIR/$SERVER_EXE_REL" -log
+    wine "$SERVER_DIR/$SERVER_EXE_REL" -log

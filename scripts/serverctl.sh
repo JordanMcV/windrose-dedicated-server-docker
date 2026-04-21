@@ -38,7 +38,7 @@ case "$cmd" in
         exec tail -F "$latest"
         ;;
     invite)
-        desc="$SERVER_DIR/ServerDescription.json"
+        desc="$SERVER_DIR/R5/ServerDescription.json"
         if [[ ! -f "$desc" ]]; then
             echo "ServerDescription.json not found at $desc"
             exit 1

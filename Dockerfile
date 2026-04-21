@@ -34,7 +34,8 @@ RUN set -eux; \
     mkdir -p /opt/steamcmd; \
     curl -fsSL https://media.steampowered.com/client/steamcmd_linux.tar.gz \
         | tar -xz -C /opt/steamcmd; \
-    ln -sf /opt/steamcmd/steamcmd.sh /usr/local/bin/steamcmd
+    printf '#!/bin/sh\nexec /opt/steamcmd/steamcmd.sh "$@"\n' > /usr/local/bin/steamcmd; \
+    chmod 0755 /usr/local/bin/steamcmd
 
 RUN set -eux; \
     groupadd -g 1000 steam; \

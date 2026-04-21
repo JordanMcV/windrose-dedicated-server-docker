@@ -33,7 +33,7 @@ Players join with that code from the Windrose client — no port-forwarding need
 - **Display:** `xvfb-run -a` provides a throwaway X server — the Unreal shipping server occasionally wants one.
 - **Init:** `tini` is PID 1 so `xvfb-run` behaves and `SIGTERM` propagates cleanly (Windrose needs ~90 s to flush saves).
 - **Install:** SteamCMD runs as the non-root `steam` user against app `4129620` into `/data/server`, forcing the Windows platform.
-- **Run:** `wine64 /data/server/R5/Binaries/Win64/WindroseServer-Win64-Shipping.exe -log`.
+- **Run:** `wine /data/server/R5/Binaries/Win64/WindroseServer-Win64-Shipping.exe -log`.
 
 ## Configuration
 
@@ -46,7 +46,7 @@ All config is via environment variables (see `.env.example`):
 | `WINDROSE_APP_ID` | `4129620` | Steam app ID. Shouldn't change. |
 | `WINEDEBUG` | `-all` | Wine log channels. Set to `""` for verbose diagnostics when debugging. |
 
-Drop a `config/ServerDescription.json` before the first boot and it'll be seeded into the server install. Afterwards, edit `data/ServerDescription.json` directly while the container is stopped — the `DeploymentId` / `PersistentServerId` fields written by the server must be preserved.
+Drop a `config/ServerDescription.json` before the first boot and it'll be seeded into the server install. Afterwards, edit `data/R5/ServerDescription.json` directly while the container is stopped — the `DeploymentId` / `PersistentServerId` fields written by the server must be preserved.
 
 ## Pinning to a specific Windrose build
 
