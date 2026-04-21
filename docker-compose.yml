@@ -11,6 +11,8 @@ services:
       PGID: ${PGID:-1000}
       UPDATE_ON_START: ${UPDATE_ON_START:-true}
       WINDROSE_APP_ID: ${WINDROSE_APP_ID:-4129620}
+      WINDROSE_SERVER_NAME: ${WINDROSE_SERVER_NAME:-}
+      WINDROSE_PASSWORD: ${WINDROSE_PASSWORD:-}
       WINEDEBUG: ${WINEDEBUG:--all}
     volumes:
       - ./data:/data/server

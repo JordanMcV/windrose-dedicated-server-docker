@@ -69,6 +69,23 @@ if [[ -f /config/ServerDescription.json ]] && [[ ! -f "$SERVER_DIR/R5/ServerDesc
         "$SERVER_DIR/R5/ServerDescription.json"
 fi
 
+desc_path="$SERVER_DIR/R5/ServerDescription.json"
+if [[ -f "$desc_path" ]] && { [[ -n "${WINDROSE_SERVER_NAME:-}" ]] || [[ -n "${WINDROSE_PASSWORD:-}" ]]; }; then
+    log "applying ServerDescription overrides from env"
+    tmp="$(mktemp)"
+    jq \
+        --arg name "${WINDROSE_SERVER_NAME:-}" \
+        --arg pw   "${WINDROSE_PASSWORD:-}" \
+        '
+          (if $name != "" then .ServerDescription_Persistent.ServerName = $name else . end)
+        | (if $pw   != "" then .ServerDescription_Persistent.Password = $pw
+                               | .ServerDescription_Persistent.IsPasswordProtected = true
+                           else . end)
+        ' "$desc_path" > "$tmp"
+    install -o steam -g steam -m 0644 "$tmp" "$desc_path"
+    rm -f "$tmp"
+fi
+
 cd "$SERVER_DIR"
 
 log "launching WindroseServer under Wine + Xvfb"

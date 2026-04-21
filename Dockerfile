@@ -17,7 +17,7 @@ RUN set -eux; \
     apt-get install -y --no-install-recommends \
         ca-certificates curl gnupg \
         tini xvfb xauth \
-        gosu procps \
+        gosu procps jq \
         lib32gcc-s1 libstdc++6:i386 libcurl4:i386 \
         cabextract; \
     install -d -m 0755 /etc/apt/keyrings; \
