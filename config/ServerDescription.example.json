@@ -1,8 +1,0 @@
-{
-  "ServerName": "My Windrose Server",
-  "IsPasswordProtected": false,
-  "Password": "",
-  "MaxPlayerCount": 4,
-  "MobHealthMultiplier": 1.0,
-  "ShipDamageMultiplier": 1.0
-}
