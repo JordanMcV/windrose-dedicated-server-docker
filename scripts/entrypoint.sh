@@ -86,6 +86,55 @@ if [[ -f "$desc_path" ]] && { [[ -n "${WINDROSE_SERVER_NAME:-}" ]] || [[ -n "${W
     rm -f "$tmp"
 fi
 
+world_vars_set=false
+for v in WINDROSE_MOB_HEALTH_MULTIPLIER WINDROSE_MOB_DAMAGE_MULTIPLIER \
+         WINDROSE_SHIPS_HEALTH_MULTIPLIER WINDROSE_SHIPS_DAMAGE_MULTIPLIER \
+         WINDROSE_BOARDING_DIFFICULTY_MULTIPLIER \
+         WINDROSE_COOP_STATS_CORRECTION_MODIFIER \
+         WINDROSE_COOP_SHIP_STATS_CORRECTION_MODIFIER \
+         WINDROSE_COMBAT_DIFFICULTY \
+         WINDROSE_SHARED_QUESTS WINDROSE_EASY_EXPLORE; do
+    if [[ -n "${!v:-}" ]]; then world_vars_set=true; break; fi
+done
+
+if [[ "$world_vars_set" == "true" ]]; then
+    log "applying WorldDescription overrides from env (forces WorldPresetType=Custom)"
+    while IFS= read -r world_file; do
+        tmp="$(mktemp)"
+        jq \
+            --arg mh  "${WINDROSE_MOB_HEALTH_MULTIPLIER:-}" \
+            --arg md  "${WINDROSE_MOB_DAMAGE_MULTIPLIER:-}" \
+            --arg sh  "${WINDROSE_SHIPS_HEALTH_MULTIPLIER:-}" \
+            --arg sd  "${WINDROSE_SHIPS_DAMAGE_MULTIPLIER:-}" \
+            --arg bd  "${WINDROSE_BOARDING_DIFFICULTY_MULTIPLIER:-}" \
+            --arg cs  "${WINDROSE_COOP_STATS_CORRECTION_MODIFIER:-}" \
+            --arg css "${WINDROSE_COOP_SHIP_STATS_CORRECTION_MODIFIER:-}" \
+            --arg cd  "${WINDROSE_COMBAT_DIFFICULTY:-}" \
+            --arg sq  "${WINDROSE_SHARED_QUESTS:-}" \
+            --arg ee  "${WINDROSE_EASY_EXPLORE:-}" \
+            '
+            def fkey(n): "{\"TagName\": \"WDS.Parameter." + n + "\"}";
+            def setf(n; v): if v != "" then .WorldDescription.WorldSettings.FloatParameters[fkey(n)] = (v | tonumber) else . end;
+            def setb(n; v): if v != "" then .WorldDescription.WorldSettings.BoolParameters[fkey(n)]  = (v == "true") else . end;
+              .WorldDescription.WorldPresetType = "Custom"
+            | setf("MobHealthMultiplier";              $mh)
+            | setf("MobDamageMultiplier";              $md)
+            | setf("ShipsHealthMultiplier";            $sh)
+            | setf("ShipsDamageMultiplier";            $sd)
+            | setf("BoardingDifficultyMultiplier";     $bd)
+            | setf("Coop.StatsCorrectionModifier";     $cs)
+            | setf("Coop.ShipStatsCorrectionModifier"; $css)
+            | setb("Coop.SharedQuests";                $sq)
+            | setb("EasyExplore";                      $ee)
+            | (if $cd != ""
+                 then .WorldDescription.WorldSettings.TagParameters[fkey("CombatDifficulty")].TagName = "WDS.Parameter.CombatDifficulty." + $cd
+                 else . end)
+            ' "$world_file" > "$tmp"
+        install -o steam -g steam -m 0644 "$tmp" "$world_file"
+        rm -f "$tmp"
+    done < <(find "$SERVER_DIR/R5/Saved/SaveProfiles/Default/RocksDB" -name 'WorldDescription.json' 2>/dev/null)
+fi
+
 cd "$SERVER_DIR"
 
 log "launching WindroseServer under Wine + Xvfb"
